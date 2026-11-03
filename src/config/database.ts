@@ -14,7 +14,7 @@ export const connectDatabase = async (): Promise<typeof mongoose | null> => {
     console.log(`Connecting to MongoDB Atlas: ${maskedUri}`);
 
     const conn = await mongoose.connect(env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 15000,
       autoIndex: true,
     });
 

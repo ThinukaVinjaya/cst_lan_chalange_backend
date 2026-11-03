@@ -9,7 +9,6 @@ export interface ITeam extends Document {
   university: string;
   captain: IRegistrationCaptain;
   players: IRegistrationPlayer[];
-  substitute?: IRegistrationPlayer;
   registrationId: mongoose.Types.ObjectId;
   isActive: boolean;
   matchesPlayed: number;
@@ -52,30 +51,27 @@ const TeamSchema = new Schema<ITeam>(
     university: {
       type: String,
       required: true,
+      default: 'Uva Wellassa University of Sri Lanka',
       trim: true,
       index: true,
     },
     captain: {
       name: { type: String, required: true },
-      email: { type: String, required: true },
-      phone: { type: String, required: true },
+      whatsappNumber: { type: String, required: true },
+      faculty: { type: String },
+      email: { type: String },
+      phone: { type: String },
     },
     players: [
       {
         fullName: { type: String, required: true },
-        inGameName: { type: String, required: true },
-        steamId: { type: String, required: true },
-        email: { type: String, required: true },
+        faculty: { type: String, required: true },
+        inGameName: { type: String, default: '' },
+        steamId: { type: String, default: '' },
+        email: { type: String, default: '' },
         role: { type: String, default: 'PLAYER' },
       },
     ],
-    substitute: {
-      fullName: { type: String },
-      inGameName: { type: String },
-      steamId: { type: String },
-      email: { type: String },
-      role: { type: String, default: 'SUBSTITUTE' },
-    },
     registrationId: {
       type: Schema.Types.ObjectId,
       ref: 'Registration',

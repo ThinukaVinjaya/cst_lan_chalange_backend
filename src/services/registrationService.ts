@@ -8,26 +8,22 @@ import { uploadTeamLogo } from './cloudinaryService';
 export interface SubmitRegistrationDTO {
   teamName: string;
   teamTag: string;
-  university: string;
+  university?: string;
   captain: {
     name: string;
-    email: string;
-    phone: string;
+    whatsappNumber?: string;
+    phone?: string;
+    faculty?: string;
+    email?: string;
   };
   players: Array<{
     fullName: string;
-    inGameName: string;
-    steamId: string;
-    email: string;
+    faculty: string;
+    inGameName?: string;
+    steamId?: string;
+    email?: string;
     role?: string;
   }>;
-  substitute?: {
-    fullName: string;
-    inGameName: string;
-    steamId: string;
-    email: string;
-    role?: string;
-  } | null;
   teamLogo?: string;
 }
 
@@ -44,6 +40,7 @@ export const submitRegistration = async (
 
   const teamNameClean = data.teamName.trim();
   const teamTagClean = data.teamTag.trim().toUpperCase();
+  const whatsappNum = (data.captain.whatsappNumber || data.captain.phone || '').trim();
 
   // 2. Prevent duplicate team name or tag in active or approved registrations / teams
   const duplicateName = await Registration.findOne({
@@ -62,26 +59,22 @@ export const submitRegistration = async (
     throw ApiError.conflict(`The team tag [${teamTagClean}] is already in use.`);
   }
 
-  // 3. Prevent same Steam ID on multiple active teams
-  const allRoster = [...data.players];
-  if (data.substitute && data.substitute.steamId) {
-    allRoster.push(data.substitute);
-  }
+  // 3. Prevent same Steam ID on multiple active teams (if Steam IDs are provided)
+  const submittedSteamIds = data.players
+    .map((p) => (p.steamId || '').trim().toLowerCase())
+    .filter(Boolean);
 
-  const submittedSteamIds = allRoster.map((p) => p.steamId.trim().toLowerCase());
+  if (submittedSteamIds.length > 0) {
+    const existingActiveRoster = await Team.findOne({
+      isActive: true,
+      'players.steamId': { $in: submittedSteamIds },
+    });
 
-  const existingActiveRoster = await Team.findOne({
-    isActive: true,
-    $or: [
-      { 'players.steamId': { $in: submittedSteamIds } },
-      { 'substitute.steamId': { $in: submittedSteamIds } },
-    ],
-  });
-
-  if (existingActiveRoster) {
-    throw ApiError.conflict(
-      'One or more player Steam IDs are already registered to an approved active collegiate squad.'
-    );
+    if (existingActiveRoster) {
+      throw ApiError.conflict(
+        'One or more player Steam IDs are already registered to an approved active squad.'
+      );
+    }
   }
 
   // 4. Handle logo upload (Cloudinary or base64 or fallback)
@@ -109,29 +102,22 @@ export const submitRegistration = async (
     teamTag: teamTagClean,
     teamLogo: logoUrl,
     logoPublicId,
-    university: data.university.trim(),
+    university: (data.university || 'Uva Wellassa University of Sri Lanka').trim(),
     captain: {
       name: data.captain.name.trim(),
-      email: data.captain.email.trim().toLowerCase(),
-      phone: data.captain.phone.trim(),
+      whatsappNumber: whatsappNum,
+      faculty: data.captain.faculty?.trim() || data.players[0]?.faculty?.trim() || 'Faculty of Applied Sciences',
+      email: data.captain.email?.trim().toLowerCase() || '',
+      phone: whatsappNum,
     },
     players: data.players.map((p) => ({
       fullName: p.fullName.trim(),
-      inGameName: p.inGameName.trim(),
-      steamId: p.steamId.trim(),
-      email: p.email.trim().toLowerCase(),
+      faculty: p.faculty.trim(),
+      inGameName: (p.inGameName || '').trim(),
+      steamId: (p.steamId || '').trim(),
+      email: p.email?.trim().toLowerCase() || '',
       role: p.role || 'PLAYER',
     })),
-    substitute:
-      data.substitute && data.substitute.fullName && data.substitute.inGameName
-        ? {
-            fullName: data.substitute.fullName.trim(),
-            inGameName: data.substitute.inGameName.trim(),
-            steamId: data.substitute.steamId.trim(),
-            email: data.substitute.email.trim().toLowerCase(),
-            role: 'SUBSTITUTE',
-          }
-        : undefined,
     status: 'PENDING',
     ipAddress,
   });
@@ -162,12 +148,11 @@ export const getPublicRegistration = async (idOrNumber: string) => {
     university: reg.university,
     captainName: reg.captain.name,
     players: reg.players.map((p) => ({
-      inGameName: p.inGameName,
-      role: p.role,
+      fullName: p.fullName,
+      faculty: p.faculty,
+      inGameName: p.inGameName || '',
+      role: p.role || 'PLAYER',
     })),
-    substitute: reg.substitute
-      ? { inGameName: reg.substitute.inGameName, role: 'SUBSTITUTE' }
-      : null,
     status: reg.status,
     createdAt: reg.createdAt,
   };

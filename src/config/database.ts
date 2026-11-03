@@ -1,5 +1,13 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
 import { env } from './environment';
+
+// Configure reliable DNS servers (Google & Cloudflare) to prevent Windows SRV lookup failures
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+  // Ignore in environments where setting DNS servers is restricted
+}
 
 // Disable long buffering so operations fail fast if database is disconnected
 mongoose.set('bufferCommands', false);

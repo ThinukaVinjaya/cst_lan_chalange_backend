@@ -114,7 +114,6 @@ export const handleApproveRegistration = async (
         university: registration.university,
         captain: registration.captain,
         players: registration.players,
-        substitute: registration.substitute,
         registrationId: registration._id,
         isActive: true,
       });

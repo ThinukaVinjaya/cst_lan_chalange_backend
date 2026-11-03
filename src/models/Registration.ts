@@ -2,16 +2,19 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 
 export interface IRegistrationPlayer {
   fullName: string;
-  inGameName: string;
-  steamId: string;
-  email: string;
-  role: string;
+  faculty: string;
+  inGameName?: string;
+  steamId?: string;
+  email?: string;
+  role?: string;
 }
 
 export interface IRegistrationCaptain {
   name: string;
-  email: string;
-  phone: string;
+  whatsappNumber: string;
+  faculty?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface IRegistration extends Document {
@@ -23,7 +26,6 @@ export interface IRegistration extends Document {
   university: string;
   captain: IRegistrationCaptain;
   players: IRegistrationPlayer[];
-  substitute?: IRegistrationPlayer;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string;
   reviewedBy?: mongoose.Types.ObjectId;
@@ -36,9 +38,10 @@ export interface IRegistration extends Document {
 const RegistrationPlayerSchema = new Schema<IRegistrationPlayer>(
   {
     fullName: { type: String, required: true, trim: true },
-    inGameName: { type: String, required: true, trim: true },
-    steamId: { type: String, required: true, trim: true },
-    email: { type: String, required: true, trim: true, lowercase: true },
+    faculty: { type: String, required: true, trim: true },
+    inGameName: { type: String, default: '', trim: true },
+    steamId: { type: String, default: '', trim: true },
+    email: { type: String, trim: true, lowercase: true, default: '' },
     role: { type: String, default: 'PLAYER' },
   },
   { _id: false }
@@ -47,8 +50,10 @@ const RegistrationPlayerSchema = new Schema<IRegistrationPlayer>(
 const RegistrationCaptainSchema = new Schema<IRegistrationCaptain>(
   {
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, trim: true, lowercase: true },
-    phone: { type: String, required: true, trim: true },
+    whatsappNumber: { type: String, required: true, trim: true },
+    faculty: { type: String, trim: true },
+    email: { type: String, trim: true, lowercase: true },
+    phone: { type: String, trim: true },
   },
   { _id: false }
 );
@@ -85,6 +90,7 @@ const RegistrationSchema = new Schema<IRegistration>(
     university: {
       type: String,
       required: [true, 'University is required'],
+      default: 'Uva Wellassa University of Sri Lanka',
       trim: true,
       index: true,
     },
@@ -99,12 +105,8 @@ const RegistrationSchema = new Schema<IRegistration>(
         validator: function (v: IRegistrationPlayer[]) {
           return Array.isArray(v) && v.length === 5;
         },
-        message: 'Exactly 5 main players are required for registration.',
+        message: 'Exactly 5 players are required for registration.',
       },
-    },
-    substitute: {
-      type: RegistrationPlayerSchema,
-      required: false,
     },
     status: {
       type: String,
@@ -140,7 +142,7 @@ const RegistrationSchema = new Schema<IRegistration>(
 // Compound index to prevent duplicate team names or tags in active/pending states
 RegistrationSchema.index({ teamName: 1, status: 1 });
 RegistrationSchema.index({ teamTag: 1, status: 1 });
-RegistrationSchema.index({ 'players.steamId': 1 });
+RegistrationSchema.index({ 'players.steamId': 1 }, { sparse: true });
 
 export const Registration: Model<IRegistration> =
   mongoose.models.Registration ||

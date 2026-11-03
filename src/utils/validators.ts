@@ -14,6 +14,15 @@ export const MATCH_STATUSES = ['UPCOMING', 'LIVE', 'COMPLETED', 'CANCELLED'] as 
 
 export const REGISTRATION_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const;
 
+// Official Faculties of Uva Wellassa University of Sri Lanka
+export const UWU_FACULTIES = [
+  'Faculty of Applied Sciences',
+  'Faculty of Management',
+  'Faculty of Technological Studies',
+  'Faculty of Animal Science and Export Agriculture',
+  'Faculty of Medicine',
+] as const;
+
 // Steam ID regex validator supporting:
 // - Classic format: STEAM_0:0:123456 or STEAM_1:1:123456
 // - SteamID3: [U:1:123456]
@@ -23,42 +32,40 @@ export const steamIdRegex = /^(STEAM_[0-5]:[0-1]:[0-9]+|\[U:1:[0-9]+\]|[0-9]{17}
 
 export const PlayerSchema = z.object({
   fullName: z.string().min(2, 'Player full name is required').max(100),
-  inGameName: z.string().min(2, 'Player in-game name (IGN) is required').max(30),
-  steamId: z.string().regex(steamIdRegex, 'Valid Steam ID format required (e.g. STEAM_0:1:45829102 or 17-digit SteamID64)'),
-  email: z.string().email('Valid student email required').toLowerCase(),
+  faculty: z.string().min(2, 'Faculty is required'),
+  inGameName: z.string().max(30).optional().default(''),
+  steamId: z.string().optional().default(''),
+  email: z.string().email('Valid email').toLowerCase().optional().or(z.literal('')),
   role: z.string().optional().default('PLAYER'),
 });
 
 export const CaptainSchema = z.object({
-  name: z.string().min(2, 'Captain full name is required').max(100),
-  email: z.string().email('Valid student email is required').toLowerCase(),
-  phone: z.string().min(7, 'Valid contact phone number is required').max(20),
+  name: z.string().min(2, 'Team leader name is required').max(100),
+  whatsappNumber: z.string().min(7, 'Valid WhatsApp number is required (e.g. 0771234567)').max(25),
+  faculty: z.string().optional(),
+  email: z.string().email('Valid email').toLowerCase().optional().or(z.literal('')),
+  phone: z.string().optional(), // backward compatibility if passed as phone
 });
 
 export const RegistrationSubmitSchema = z.object({
   teamName: z.string().min(3, 'Team name must be at least 3 characters').max(50),
   teamTag: z.string().min(2, 'Team tag must be at least 2 characters').max(10).toUpperCase(),
-  university: z.string().min(3, 'University affiliation is required').max(150),
+  university: z.string().default('Uva Wellassa University of Sri Lanka'),
   captain: CaptainSchema,
-  players: z.array(PlayerSchema).length(5, 'Registration requires exactly 5 main players'),
-  substitute: PlayerSchema.optional().nullable(),
+  players: z.array(PlayerSchema).length(5, 'Registration requires exactly 5 players'),
   teamLogo: z.string().optional(),
 }).refine((data) => {
-  // Check for duplicate emails or Steam IDs within the team roster
-  const allPlayers = [...data.players];
-  if (data.substitute && data.substitute.steamId) {
-    allPlayers.push(data.substitute);
+  // Check for duplicate Steam IDs within the team roster only if Steam IDs are provided
+  const steamIds = data.players
+    .map((p) => (p.steamId || '').trim().toLowerCase())
+    .filter(Boolean);
+  if (steamIds.length > 0) {
+    const uniqueSteamIds = new Set(steamIds);
+    return uniqueSteamIds.size === steamIds.length;
   }
-
-  const steamIds = allPlayers.map(p => p.steamId.trim().toLowerCase());
-  const emails = allPlayers.map(p => p.email.trim().toLowerCase());
-
-  const uniqueSteamIds = new Set(steamIds);
-  const uniqueEmails = new Set(emails);
-
-  return uniqueSteamIds.size === steamIds.length && uniqueEmails.size === emails.length;
+  return true;
 }, {
-  message: 'Each player on the team roster must have a unique Steam ID and Email address.',
+  message: 'Each player on the team roster must have a unique Steam ID.',
   path: ['players'],
 });
 

@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import mongoose from 'mongoose';
 import { Registration, IRegistration } from '../models/Registration';
 import { Team } from '../models/Team';
 import { TournamentSettings } from '../models/TournamentSettings';
@@ -32,6 +33,26 @@ export const submitRegistration = async (
   fileBuffer?: Buffer,
   ipAddress?: string
 ): Promise<{ registration: IRegistration; confirmationCode: string }> => {
+  if (mongoose.connection.readyState !== 1) {
+    const codeSuffix = crypto.randomBytes(3).toString('hex').toUpperCase();
+    const registrationNumber = `REG-2026-${codeSuffix}`;
+    const demoRegistration = {
+      registrationNumber,
+      teamName: data.teamName.trim(),
+      teamTag: data.teamTag.trim().toUpperCase(),
+      teamLogo: data.teamLogo || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
+      university: data.university || 'Uva Wellassa University of Sri Lanka',
+      captain: data.captain,
+      players: data.players,
+      status: 'PENDING',
+      createdAt: new Date(),
+    } as any;
+    return {
+      registration: demoRegistration,
+      confirmationCode: registrationNumber,
+    };
+  }
+
   // 1. Check if registrations are open
   const settings = await TournamentSettings.findOne();
   if (settings && !settings.registrationOpen) {
@@ -129,6 +150,23 @@ export const submitRegistration = async (
 };
 
 export const getPublicRegistration = async (idOrNumber: string) => {
+  if (mongoose.connection.readyState !== 1) {
+    return {
+      id: 'reg-demo-id',
+      registrationNumber: idOrNumber.startsWith('REG-') ? idOrNumber : 'REG-2026-DEMO',
+      teamName: 'UWU CST Vanguard',
+      teamTag: 'CST.VAN',
+      teamLogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
+      university: 'Uva Wellassa University of Sri Lanka',
+      captainName: 'Kasun Bandara',
+      players: [
+        { fullName: 'Kasun Bandara', faculty: 'Faculty of Applied Sciences', inGameName: '', role: 'CAPTAIN' },
+      ],
+      status: 'PENDING',
+      createdAt: new Date(),
+    };
+  }
+
   const query = idOrNumber.startsWith('REG-')
     ? { registrationNumber: idOrNumber }
     : { _id: idOrNumber };

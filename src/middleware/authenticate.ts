@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import { verifyToken, TokenPayload } from '../utils/generateToken';
 import { Admin, IAdmin } from '../models/Admin';
 import { ApiError } from '../utils/ApiError';
@@ -37,9 +38,9 @@ export const authenticate = async (
       return next(ApiError.unauthorized('Session expired or invalid token. Please log in again.'));
     }
 
-    if (payload.id === 'admin-fallback-id') {
+    if (payload.id === 'admin-fallback-id' || mongoose.connection.readyState !== 1) {
       req.admin = {
-        _id: 'admin-fallback-id' as any,
+        _id: payload.id as any,
         username: payload.username,
         email: payload.email,
         role: payload.role as any,

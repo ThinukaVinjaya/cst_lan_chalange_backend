@@ -9,8 +9,10 @@ const startServer = async () => {
   console.log('  Uva Wellassa University of Sri Lanka');
   console.log('===================================================================');
 
-  // Connect to database
-  await connectDatabase();
+  // Connect to database in background without blocking server startup
+  connectDatabase().catch((err) => {
+    console.error('Initial database connection attempt:', err.message);
+  });
 
   const app = createApp();
 

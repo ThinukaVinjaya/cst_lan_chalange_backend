@@ -7,8 +7,8 @@ export type MatchStatusType = typeof MATCH_STATUSES[number];
 export interface IMatch extends Document {
   matchNumber?: number;
   stage: string;
-  teamA: mongoose.Types.ObjectId;
-  teamB: mongoose.Types.ObjectId;
+  teamA?: mongoose.Types.ObjectId;
+  teamB?: mongoose.Types.ObjectId;
   teamAName: string;
   teamATag: string;
   teamALogo: string;
@@ -29,6 +29,10 @@ export interface IMatch extends Document {
   roundHistory: ('teamA' | 'teamB')[];
   teamASide: 'CT' | 'T';
   teamBSide: 'CT' | 'T';
+  bracketRound?: 'quarterfinals' | 'semifinals' | 'final' | 'third_place' | 'groups';
+  bracketPosition?: number;
+  nextMatchNumber?: number;
+  nextMatchSlot?: 'teamA' | 'teamB';
   publishedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -48,19 +52,19 @@ const MatchSchema = new Schema<IMatch>(
     teamA: {
       type: Schema.Types.ObjectId,
       ref: 'Team',
-      required: true,
+      required: false,
     },
     teamB: {
       type: Schema.Types.ObjectId,
       ref: 'Team',
-      required: true,
+      required: false,
     },
-    teamAName: { type: String, required: true },
-    teamATag: { type: String, required: true },
-    teamALogo: { type: String, required: true },
-    teamBName: { type: String, required: true },
-    teamBTag: { type: String, required: true },
-    teamBLogo: { type: String, required: true },
+    teamAName: { type: String, default: 'TBD' },
+    teamATag: { type: String, default: 'TBD' },
+    teamALogo: { type: String, default: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80' },
+    teamBName: { type: String, default: 'TBD' },
+    teamBTag: { type: String, default: 'TBD' },
+    teamBLogo: { type: String, default: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80' },
     mapName: {
       type: String,
       enum: CS2_MAPS,
@@ -94,6 +98,22 @@ const MatchSchema = new Schema<IMatch>(
     },
     streamUrl: {
       type: String,
+    },
+    bracketRound: {
+      type: String,
+      enum: ['quarterfinals', 'semifinals', 'final', 'third_place', 'groups'],
+      default: 'groups',
+      index: true,
+    },
+    bracketPosition: {
+      type: Number,
+    },
+    nextMatchNumber: {
+      type: Number,
+    },
+    nextMatchSlot: {
+      type: String,
+      enum: ['teamA', 'teamB'],
     },
     currentRound: {
       type: Number,

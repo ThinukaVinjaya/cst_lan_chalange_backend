@@ -43,6 +43,13 @@ export const errorHandler = (
   } else if (err.name === 'TokenExpiredError') {
     statusCode = 401;
     message = 'Authentication token expired';
+  } else if (err.name === 'CastError') {
+    statusCode = 400;
+    message = `Invalid resource identifier format`;
+    errors = [{ field: err.path, message: `Invalid identifier: ${err.value}` }];
+  } else if (err.name === 'MongooseServerSelectionError' || (err.name === 'MongooseError' && err.message?.includes('bufferCommands'))) {
+    statusCode = 503;
+    message = 'Database is currently connecting. Using offline tournament cache.';
   } else if (err.message) {
     message = err.message;
   }

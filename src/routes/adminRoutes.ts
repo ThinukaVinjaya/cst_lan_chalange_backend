@@ -19,6 +19,7 @@ import {
   handleDeleteMatch,
   handleUpdateMatchScore,
   handlePublishMatchScore,
+  handleGeneratePlayoffs,
 } from '../controllers/matchController';
 import {
   handleGetAdminSettings,
@@ -56,6 +57,7 @@ router.patch('/teams/:id/status', handleToggleTeamStatus);
 
 // 4. Match Management & Manual Score Publishing
 router.post('/matches', validateRequest(MatchCreateSchema), handleCreateMatch);
+router.post('/matches/generate-playoffs', handleGeneratePlayoffs);
 router.get('/matches', handleGetMatches);
 router.get('/matches/:id', handleGetMatchById);
 router.patch('/matches/:id', handleUpdateMatch);

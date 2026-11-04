@@ -6,7 +6,11 @@ import {
   handleGetPublicTeams,
   handleGetPublicTeamById,
 } from '../controllers/scoreboardController';
-import { handleGetMatches, handleGetMatchById } from '../controllers/matchController';
+import {
+  handleGetMatches,
+  handleGetMatchById,
+  handleGetPlayoffBracket,
+} from '../controllers/matchController';
 import { generalLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
@@ -18,6 +22,7 @@ router.get('/settings', handleGetPublicSettings);
 router.get('/teams', handleGetPublicTeams);
 router.get('/teams/:id', handleGetPublicTeamById);
 router.get('/matches', handleGetMatches);
+router.get('/matches/bracket', handleGetPlayoffBracket);
 router.get('/matches/:id', handleGetMatchById);
 router.get('/scoreboard', handleGetPublicScoreboard);
 router.get('/standings', handleGetPublicStandings);

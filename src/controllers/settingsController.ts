@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { TournamentSettings } from '../models/TournamentSettings';
+import { Match } from '../models/Match';
+import { seedPlayoffsFromApprovedTeams } from './matchController';
 import { ApiResponse } from '../utils/ApiResponse';
 import { AuthenticatedRequest } from '../middleware/authenticate';
 import { recordAudit } from '../services/auditService';
@@ -103,14 +105,30 @@ export const handleUpdateAdminSettings = async (
     if (updates.announcementText !== undefined) settings.announcementText = updates.announcementText;
     if (updates.livestreamUrl !== undefined) settings.livestreamUrl = updates.livestreamUrl;
 
-    await settings.save();
+    if (typeof settings.save === 'function') {
+      await settings.save();
+    }
+
+    // If registration is closed or status transitioned past registrations, auto-seed playoff bracket if not yet generated
+    if (mongoose.connection.readyState === 1 && (settings.registrationOpen === false || (settings.eventStatus && settings.eventStatus !== 'REGISTRATIONS OPEN'))) {
+      const existingPlayoffCount = await Match.countDocuments({
+        bracketRound: { $in: ['quarterfinals', 'semifinals', 'final'] },
+      });
+      if (existingPlayoffCount === 0) {
+        try {
+          await seedPlayoffsFromApprovedTeams();
+        } catch (playoffErr) {
+          console.warn('Auto playoff generation skipped on settings change:', playoffErr);
+        }
+      }
+    }
 
     await recordAudit({
       adminId: req.admin?._id,
       adminUsername: req.admin?.username || 'admin',
       action: 'UPDATE_TOURNAMENT_SETTINGS',
       resourceType: 'TournamentSettings',
-      resourceId: (settings._id as any).toString(),
+      resourceId: (settings._id ? (settings._id as any).toString() : 'demo-settings-id'),
       details: updates,
       req,
     });

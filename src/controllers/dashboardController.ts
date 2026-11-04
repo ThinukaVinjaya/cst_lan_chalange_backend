@@ -1,4 +1,5 @@
 import { Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import { Registration } from '../models/Registration';
 import { Team } from '../models/Team';
 import { Match } from '../models/Match';
@@ -12,6 +13,24 @@ export const handleGetDashboardOverview = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      ApiResponse.send(res, 200, 'Dashboard overview telemetry (demo fallback)', {
+        stats: {
+          totalRegistrations: 8,
+          pendingRegistrations: 1,
+          approvedRegistrations: 6,
+          rejectedRegistrations: 1,
+          totalTeams: 6,
+          totalMatches: 8,
+          completedMatches: 4,
+          upcomingMatches: 3,
+        },
+        recentRegistrations: [],
+        recentMatches: [],
+      });
+      return;
+    }
+
     const [
       totalRegistrations,
       pendingRegistrations,
@@ -61,6 +80,21 @@ export const handleGetDashboardActivity = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      ApiResponse.send(res, 200, 'Recent admin audit activity (demo fallback)', [
+        {
+          _id: 'act-1',
+          adminUsername: 'admin',
+          action: 'SEEDED_PLAYOFF_BRACKET',
+          resourceType: 'Match',
+          resourceId: 'playoff-tree',
+          details: { round: 'quarterfinals' },
+          timestamp: new Date(),
+        },
+      ]);
+      return;
+    }
+
     const { limit = '20' } = req.query;
     const limitNum = parseInt(limit as string, 10) || 20;
 

@@ -125,10 +125,10 @@ export const recalculateAllStandings = async (): Promise<void> => {
   });
 
   completedMatches.forEach((m) => {
-    const idA = (m.teamA as any).toString();
-    const idB = (m.teamB as any).toString();
+    const idA = m.teamA ? (m.teamA as any).toString() : null;
+    const idB = m.teamB ? (m.teamB as any).toString() : null;
 
-    if (statsMap[idA]) {
+    if (idA && statsMap[idA]) {
       statsMap[idA].played += 1;
       statsMap[idA].roundsWon += m.scoreA;
       statsMap[idA].roundsLost += m.scoreB;
@@ -142,7 +142,7 @@ export const recalculateAllStandings = async (): Promise<void> => {
       }
     }
 
-    if (statsMap[idB]) {
+    if (idB && statsMap[idB]) {
       statsMap[idB].played += 1;
       statsMap[idB].roundsWon += m.scoreB;
       statsMap[idB].roundsLost += m.scoreA;

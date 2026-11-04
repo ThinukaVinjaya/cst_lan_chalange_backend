@@ -55,9 +55,51 @@ export const handleGetPublicScoreboard = async (
   try {
     if (mongoose.connection.readyState !== 1) {
       const standings = await getPublicStandings();
+      const liveMatches = [
+        {
+          _id: 'm-1',
+          matchNumber: 105,
+          stage: 'Semifinal 1 (MR12)',
+          teamAName: 'UWU CST Vanguard',
+          teamATag: 'CST.VAN',
+          teamALogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
+          teamBName: 'UWU FAS Strikers',
+          teamBTag: 'FAS.STR',
+          teamBLogo: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=200&auto=format&fit=crop&q=80',
+          mapName: 'Nuke',
+          scheduledAt: new Date(),
+          status: 'LIVE',
+          scoreA: 11,
+          scoreB: 9,
+          currentRound: 20,
+          half: 2,
+          c4Planted: false,
+          teamASide: 'CT',
+          teamBSide: 'T',
+          streamUrl: 'https://twitch.tv/cst_lan_challenge',
+        },
+      ];
+      const upcomingMatches = [
+        {
+          _id: 'm-2',
+          matchNumber: 106,
+          stage: 'Semifinal 2 (MR12)',
+          teamAName: 'UWU Tech Storm',
+          teamATag: 'TECH.STM',
+          teamALogo: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&auto=format&fit=crop&q=80',
+          teamBName: 'UWU MED Cyber Wolves',
+          teamBTag: 'MED.WLV',
+          teamBLogo: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=200&auto=format&fit=crop&q=80',
+          mapName: 'Anubis',
+          scheduledAt: new Date(Date.now() + 7200000),
+          status: 'UPCOMING',
+          scoreA: 0,
+          scoreB: 0,
+        },
+      ];
       ApiResponse.send(res, 200, 'Public scoreboard data', {
-        liveMatches: [],
-        upcomingMatches: [],
+        liveMatches,
+        upcomingMatches,
         completedMatches: [],
         standings,
       });

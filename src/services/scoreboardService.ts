@@ -20,77 +20,6 @@ export interface StandingsEntry {
   points: number;
 }
 
-const FALLBACK_STANDINGS: StandingsEntry[] = [
-  {
-    rank: 1,
-    id: 'team-1',
-    name: 'UWU Tactical Vanguard',
-    tag: 'UWU.V',
-    university: 'Uva Wellassa University of Sri Lanka',
-    logo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-    matchesPlayed: 4,
-    wins: 4,
-    losses: 0,
-    roundsWon: 52,
-    roundsLost: 24,
-    roundDiff: 28,
-    winRate: 100,
-    form: ['W', 'W', 'W', 'W'],
-    points: 12,
-  },
-  {
-    rank: 2,
-    id: 'team-2',
-    name: 'Moratuwa Cyber Titans',
-    tag: 'MORA.CT',
-    university: 'University of Moratuwa',
-    logo: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&auto=format&fit=crop&q=80',
-    matchesPlayed: 4,
-    wins: 3,
-    losses: 1,
-    roundsWon: 48,
-    roundsLost: 38,
-    roundDiff: 10,
-    winRate: 75,
-    form: ['W', 'W', 'L', 'W'],
-    points: 9,
-  },
-  {
-    rank: 3,
-    id: 'team-3',
-    name: 'Colombo Apex Esports',
-    tag: 'UOC.APX',
-    university: 'University of Colombo',
-    logo: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=200&auto=format&fit=crop&q=80',
-    matchesPlayed: 3,
-    wins: 2,
-    losses: 1,
-    roundsWon: 35,
-    roundsLost: 31,
-    roundDiff: 4,
-    winRate: 67,
-    form: ['L', 'W', 'W'],
-    points: 6,
-  },
-  {
-    rank: 4,
-    id: 'team-4',
-    name: 'Peradeniya Iron Vipers',
-    tag: 'UOP.VIPER',
-    university: 'University of Peradeniya',
-    logo: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=200&auto=format&fit=crop&q=80',
-    matchesPlayed: 3,
-    wins: 1,
-    losses: 2,
-    roundsWon: 27,
-    roundsLost: 38,
-    roundDiff: -11,
-    winRate: 33,
-    form: ['W', 'L', 'L'],
-    points: 3,
-  },
-];
-
 export const recalculateAllStandings = async (): Promise<void> => {
   if (mongoose.connection.readyState !== 1) return;
 
@@ -179,14 +108,14 @@ export const recalculateAllStandings = async (): Promise<void> => {
 
 export const getPublicStandings = async (): Promise<StandingsEntry[]> => {
   if (mongoose.connection.readyState !== 1) {
-    return FALLBACK_STANDINGS;
+    return [];
   }
 
   const teams = await Team.find({ isActive: true })
     .sort({ points: -1, roundDiff: -1, wins: -1, teamName: 1 });
 
   if (teams.length === 0) {
-    return FALLBACK_STANDINGS;
+    return [];
   }
 
   return teams.map((t, idx) => ({

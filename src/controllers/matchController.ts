@@ -83,48 +83,7 @@ export const handleGetMatches = async (
     const { status, limit } = req.query;
 
     if (mongoose.connection.readyState !== 1) {
-      // Fallback sample matches
-      const fallbackMatches = [
-        {
-          _id: 'm-1',
-          matchNumber: 1,
-          stage: 'Upper Bracket Semifinal 1 (MR12)',
-          teamAName: 'UWU Tactical Vanguard',
-          teamATag: 'UWU.V',
-          teamALogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-          teamBName: 'Moratuwa Cyber Titans',
-          teamBTag: 'MORA.CT',
-          teamBLogo: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&auto=format&fit=crop&q=80',
-          mapName: 'Mirage',
-          scheduledAt: new Date(),
-          status: 'LIVE',
-          scoreA: 11,
-          scoreB: 9,
-          streamUrl: 'https://twitch.tv/cst_lan_challenge',
-          currentRound: 20,
-          half: 2,
-          c4Planted: false,
-          teamASide: 'CT',
-          teamBSide: 'T',
-        },
-        {
-          _id: 'm-2',
-          matchNumber: 2,
-          stage: 'Upper Bracket Semifinal 2',
-          teamAName: 'Colombo Apex Esports',
-          teamATag: 'UOC.APX',
-          teamALogo: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=200&auto=format&fit=crop&q=80',
-          teamBName: 'Peradeniya Iron Vipers',
-          teamBTag: 'UOP.VIPER',
-          teamBLogo: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=200&auto=format&fit=crop&q=80',
-          mapName: 'Inferno',
-          scheduledAt: new Date(Date.now() + 7200000),
-          status: 'UPCOMING',
-          scoreA: 0,
-          scoreB: 0,
-        },
-      ];
-      ApiResponse.send(res, 200, 'Matches retrieved', fallbackMatches);
+      ApiResponse.send(res, 200, 'Matches retrieved', []);
       return;
     }
 
@@ -157,22 +116,7 @@ export const handleGetMatchById = async (
     const { id } = req.params;
 
     if (mongoose.connection.readyState !== 1) {
-      ApiResponse.send(res, 200, 'Match retrieved (offline fallback)', {
-        _id: id,
-        stage: 'Playoff Match',
-        teamAName: 'UWU CST Vanguard',
-        teamATag: 'CST.VAN',
-        teamALogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-        teamBName: 'UWU Tech Storm',
-        teamBTag: 'TECH.STM',
-        teamBLogo: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&auto=format&fit=crop&q=80',
-        mapName: 'Mirage',
-        scheduledAt: new Date(),
-        status: 'LIVE',
-        scoreA: 11,
-        scoreB: 9,
-      });
-      return;
+      throw ApiError.notFound('Match fixture not found');
     }
 
     const match = await Match.findById(id);
@@ -699,179 +643,11 @@ export const handleGetPlayoffBracket = async (
 ): Promise<void> => {
   try {
     if (mongoose.connection.readyState !== 1) {
-      const fallbackQuarterfinals = [
-        {
-          _id: 'qf-1',
-          matchNumber: 101,
-          stage: 'Quarterfinal 1 (MR12)',
-          teamAName: 'UWU CST Vanguard',
-          teamATag: 'CST.VAN',
-          teamALogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-          teamBName: 'UWU Tech Outlaws',
-          teamBTag: 'TECH.OUT',
-          teamBLogo: 'https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?w=200&auto=format&fit=crop&q=80',
-          mapName: 'Mirage',
-          scheduledAt: new Date(Date.now() - 36000000),
-          status: 'COMPLETED',
-          scoreA: 13,
-          scoreB: 7,
-          winner: 'team-1',
-          bracketRound: 'quarterfinals',
-          bracketPosition: 1,
-          nextMatchNumber: 105,
-          nextMatchSlot: 'teamA',
-        },
-        {
-          _id: 'qf-2',
-          matchNumber: 102,
-          stage: 'Quarterfinal 2 (MR12)',
-          teamAName: 'UWU FAS Strikers',
-          teamATag: 'FAS.STR',
-          teamALogo: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=200&auto=format&fit=crop&q=80',
-          teamBName: 'UWU MGT Apex',
-          teamBTag: 'MGT.APX',
-          teamBLogo: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=200&auto=format&fit=crop&q=80',
-          mapName: 'Inferno',
-          scheduledAt: new Date(Date.now() - 28800000),
-          status: 'COMPLETED',
-          scoreA: 13,
-          scoreB: 11,
-          winner: 'team-3',
-          bracketRound: 'quarterfinals',
-          bracketPosition: 2,
-          nextMatchNumber: 105,
-          nextMatchSlot: 'teamB',
-        },
-        {
-          _id: 'qf-3',
-          matchNumber: 103,
-          stage: 'Quarterfinal 3 (MR12)',
-          teamAName: 'UWU Tech Storm',
-          teamATag: 'TECH.STM',
-          teamALogo: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&auto=format&fit=crop&q=80',
-          teamBName: 'UWU ANS Titans',
-          teamBTag: 'ANS.TTN',
-          teamBLogo: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&auto=format&fit=crop&q=80',
-          mapName: 'Dust II',
-          scheduledAt: new Date(Date.now() - 21600000),
-          status: 'COMPLETED',
-          scoreA: 13,
-          scoreB: 5,
-          winner: 'team-2',
-          bracketRound: 'quarterfinals',
-          bracketPosition: 3,
-          nextMatchNumber: 106,
-          nextMatchSlot: 'teamA',
-        },
-        {
-          _id: 'qf-4',
-          matchNumber: 104,
-          stage: 'Quarterfinal 4 (MR12)',
-          teamAName: 'UWU MED Cyber Wolves',
-          teamATag: 'MED.WLV',
-          teamALogo: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=200&auto=format&fit=crop&q=80',
-          teamBName: 'UWU CST Phantoms',
-          teamBTag: 'CST.PHN',
-          teamBLogo: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=200&auto=format&fit=crop&q=80',
-          mapName: 'Ancient',
-          scheduledAt: new Date(Date.now() - 14400000),
-          status: 'COMPLETED',
-          scoreA: 13,
-          scoreB: 9,
-          winner: 'team-5',
-          bracketRound: 'quarterfinals',
-          bracketPosition: 4,
-          nextMatchNumber: 106,
-          nextMatchSlot: 'teamB',
-        },
-      ];
-
-      const fallbackSemifinals = [
-        {
-          _id: 'sf-1',
-          matchNumber: 105,
-          stage: 'Semifinal 1 (MR12)',
-          teamAName: 'UWU CST Vanguard',
-          teamATag: 'CST.VAN',
-          teamALogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-          teamBName: 'UWU FAS Strikers',
-          teamBTag: 'FAS.STR',
-          teamBLogo: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=200&auto=format&fit=crop&q=80',
-          mapName: 'Nuke',
-          scheduledAt: new Date(),
-          status: 'LIVE',
-          scoreA: 11,
-          scoreB: 9,
-          bracketRound: 'semifinals',
-          bracketPosition: 1,
-          nextMatchNumber: 107,
-          nextMatchSlot: 'teamA',
-        },
-        {
-          _id: 'sf-2',
-          matchNumber: 106,
-          stage: 'Semifinal 2 (MR12)',
-          teamAName: 'UWU Tech Storm',
-          teamATag: 'TECH.STM',
-          teamALogo: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&auto=format&fit=crop&q=80',
-          teamBName: 'UWU MED Cyber Wolves',
-          teamBTag: 'MED.WLV',
-          teamBLogo: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=200&auto=format&fit=crop&q=80',
-          mapName: 'Anubis',
-          scheduledAt: new Date(Date.now() + 7200000),
-          status: 'UPCOMING',
-          scoreA: 0,
-          scoreB: 0,
-          bracketRound: 'semifinals',
-          bracketPosition: 2,
-          nextMatchNumber: 107,
-          nextMatchSlot: 'teamB',
-        },
-      ];
-
-      const fallbackFinal = {
-        _id: 'final-1',
-        matchNumber: 107,
-        stage: 'Grand Final (LAN Main Auditorium Stage)',
-        teamAName: 'Winner Semifinal 1',
-        teamATag: 'W.SF1',
-        teamALogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-        teamBName: 'Winner Semifinal 2',
-        teamBTag: 'W.SF2',
-        teamBLogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-        mapName: 'Mirage',
-        scheduledAt: new Date(Date.now() + 28800000),
-        status: 'UPCOMING',
-        scoreA: 0,
-        scoreB: 0,
-        bracketRound: 'final',
-        bracketPosition: 1,
-      };
-
-      const fallbackThirdPlace = {
-        _id: 'bronze-1',
-        matchNumber: 108,
-        stage: '3rd Place Bronze Decider',
-        teamAName: 'Runner-up Semifinal 1',
-        teamATag: 'RU.SF1',
-        teamALogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-        teamBName: 'Runner-up Semifinal 2',
-        teamBTag: 'RU.SF2',
-        teamBLogo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-        mapName: 'Dust II',
-        scheduledAt: new Date(Date.now() + 21600000),
-        status: 'UPCOMING',
-        scoreA: 0,
-        scoreB: 0,
-        bracketRound: 'third_place',
-        bracketPosition: 1,
-      };
-
-      ApiResponse.send(res, 200, 'Playoff bracket retrieved (offline fallback)', {
-        quarterfinals: fallbackQuarterfinals,
-        semifinals: fallbackSemifinals,
-        final: fallbackFinal,
-        thirdPlace: fallbackThirdPlace,
+      ApiResponse.send(res, 200, 'Playoff bracket retrieved', {
+        quarterfinals: [],
+        semifinals: [],
+        final: null,
+        thirdPlace: null,
         champion: null,
       });
       return;

@@ -14,16 +14,16 @@ export const handleGetDashboardOverview = async (
 ): Promise<void> => {
   try {
     if (mongoose.connection.readyState !== 1) {
-      ApiResponse.send(res, 200, 'Dashboard overview telemetry (demo fallback)', {
+      ApiResponse.send(res, 200, 'Dashboard overview telemetry', {
         stats: {
-          totalRegistrations: 8,
-          pendingRegistrations: 1,
-          approvedRegistrations: 6,
-          rejectedRegistrations: 1,
-          totalTeams: 6,
-          totalMatches: 8,
-          completedMatches: 4,
-          upcomingMatches: 3,
+          totalRegistrations: 0,
+          pendingRegistrations: 0,
+          approvedRegistrations: 0,
+          rejectedRegistrations: 0,
+          totalTeams: 0,
+          totalMatches: 0,
+          completedMatches: 0,
+          upcomingMatches: 0,
         },
         recentRegistrations: [],
         recentMatches: [],
@@ -81,17 +81,7 @@ export const handleGetDashboardActivity = async (
 ): Promise<void> => {
   try {
     if (mongoose.connection.readyState !== 1) {
-      ApiResponse.send(res, 200, 'Recent admin audit activity (demo fallback)', [
-        {
-          _id: 'act-1',
-          adminUsername: 'admin',
-          action: 'SEEDED_PLAYOFF_BRACKET',
-          resourceType: 'Match',
-          resourceId: 'playoff-tree',
-          details: { round: 'quarterfinals' },
-          timestamp: new Date(),
-        },
-      ]);
+      ApiResponse.send(res, 200, 'Recent admin audit activity', []);
       return;
     }
 

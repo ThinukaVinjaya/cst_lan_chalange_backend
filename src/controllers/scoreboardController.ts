@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { Match } from '../models/Match';
 import { Team } from '../models/Team';
+import { Registration } from '../models/Registration';
 import { getPublicStandings } from '../services/scoreboardService';
 import { ApiResponse } from '../utils/ApiResponse';
 import { ApiError } from '../utils/ApiError';
@@ -69,7 +70,34 @@ export const handleGetPublicTeams = async (
       .select('-captain.phone -captain.email -players.email -substitute.email')
       .sort({ points: -1, teamName: 1 });
 
-    ApiResponse.send(res, 200, 'Participating collegiate squads', teams);
+    const registrations = await Registration.find({ status: { $in: ['PENDING', 'APPROVED'] } })
+      .select('-captain.whatsappNumber -captain.phone -captain.email -players.email -players.steamId')
+      .sort({ createdAt: -1 });
+
+    const teamTags = new Set(teams.map((t) => (t.teamTag || '').toUpperCase()));
+    const regTeams = registrations
+      .filter((r) => !teamTags.has((r.teamTag || '').toUpperCase()))
+      .map((r) => ({
+        _id: r._id,
+        teamName: r.teamName,
+        teamTag: r.teamTag,
+        teamLogo: r.teamLogo || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
+        university: r.university || 'Uva Wellassa University of Sri Lanka',
+        status: (r.status || 'PENDING').toLowerCase(),
+        captain: {
+          name: r.captain?.name || 'Squad Leader',
+          faculty: r.captain?.faculty || '',
+        },
+        players: (r.players || []).map((p) => ({
+          name: p.fullName || 'Player',
+          faculty: p.faculty || '',
+          ign: p.inGameName || '',
+          role: p.role || 'Player',
+        })),
+        createdAt: r.createdAt,
+      }));
+
+    ApiResponse.send(res, 200, 'Participating collegiate squads', [...teams, ...regTeams]);
   } catch (error) {
     next(error);
   }
